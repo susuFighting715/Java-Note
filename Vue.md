@@ -1,4 +1,12 @@
+# VUE
+
 Vue 的核心库只关注视图层，不仅易于上手，还便于与第三方库或既有项目整合
+
+```
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+```
+
+
 
 ## mvvm
 
@@ -1856,7 +1864,7 @@ template: '<div>{{msg}}</div><div>{{msg}}</div>'
 
 ### Vue组件间的传值
 
-父组件向子组件传值
+**父组件向子组件传值**
 
 - 父组件发送的形式是以属性的形式绑定值到子组件身上
 
@@ -1899,7 +1907,7 @@ Vue.component('menu-item',{
 
 
 
-子组件向父组件传值
+**子组件向父组件传值**
 
 - 子组件用`$emit()`触发事件,
 
@@ -1919,15 +1927,129 @@ Vue.component("menu-item",{
 
 
 
-兄弟组件之间传值
+**兄弟组件之间传值**
+
+- 兄弟间的传值需要借助事件中心
+
+```html
+var hub = new Vue()
+```
+
+- 传递数据
+
+```javascript
+methods: {
+        handle: function(){
+          <!--2、传递数据方，通过一个事件触发hub.$emit(方法名，传递的数据) 触发兄弟组件的事件-->
+          hub.$emit('jerry-event', 2);
+        }
+      }
+```
+
+- 接收数据
+
+```javascript
+mounted: function() {
+       // 3、接收数据方，通过mounted(){} 钩子中  触发hub.$on(方法名
+        hub.$on('tom-event', (val) => {
+          this.num += val;
+        });
+      }
+
+//也可以这样接收
+<cart-list :list='list' @jerry-event='delCart($id)'></cart-list>
+```
+
+- 销毁事件，通过hub.$off()方法名销毁之后无法进行传递数据
+
+```javascript
+//4、销毁事件 通过hub.$off()方法名销毁之后无法进行传递数据  
+          hub.$off('tom-event');
+          hub.$off('jerry-event');
+```
 
 
 
+### 组件插槽
+
+组件的最大特性就是复用性，而用好插槽能大大提高组件的可复用能力
+
+- 当组件渲染的时候，这个 `<slot>` 元素将会被替换为“组件标签中嵌套的内容”。
+- 插槽内可以包含任何模板代码，包括 HTML
+
+**匿名插槽**
+
+```html
+ <alert-box>一</alert-box>
+ <alert-box>二</alert-box>
+ <alert-box></alert-box>
+ <!--html页面上就会显示一二三-->
+ <!--值得注意的是没有写内容就是调用temlate中的默认内容-->
+
+
+template:`<slot>三</slot>`
+ <!--也就是slot标签中没有name属性-->
+```
 
 
 
+**具名插槽**
+
+- 具有名字的插槽 
+- 使用 `<slot>` 中的 "name" 属性绑定元素
+- 具名插槽的渲染顺序，完全取决于模板，而不是取决于父组件中元素的顺序
+
+```html
+<base-layout>
+<!--通过slot属性来指定, 这个slot的值必须和下面slot组件得name值对应上，如果没有匹配到 则放到匿名的插槽中   --> 
+      <p slot='header'>标题信息</p>
+      <p>主要内容</p>
+</base-layout>
+
+
+<header>
+	<slot name='header'></slot>
+</header>
+<main>
+	<slot></slot>
+</main>
+
+
+<!--另外一种使用方式-->
+
+<template slot='header'>
+	<p>
+        标题信息1
+    </p>
+    <p>
+        标题信息2
+    </p>
+</template>
+```
 
 
 
+**作用域插槽**
 
+既可以复用子组件的slot，又可以使slot内容不一致
+
+
+
+```html
+<template slot-scope='slotProps'>
+        <strong v-if='slotProps.info.id==3'>
+            {{slotProps.info.name}}		         
+        </strong>
+        <span v-else>{{slotProps.info.name}}</span>
+</template>
+
+
+<div>
+          <li :key='item.id' v-for='item in list'>
+		  <!--在子组件模板中,<slot>元素上有一个类似props传递数据给组件的写法msg="xxx"-->
+		  <!--插槽可以提供一个默认内容，如果如果父组件没有为这个插槽提供了内容，会显示默认的内容,如果父组件为这个插槽提供了内容，则默认的内容会被替换掉-->
+            <slot :info='item'>{{item.name}}</slot>
+          </li>
+</div>
+```
 
