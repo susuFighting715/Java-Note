@@ -50,7 +50,7 @@ git add [file name]
 ### 4，提交文件到本地仓库
 
 ```properties
-git commit
+git commit -m"提交信息---必须写"
 ```
 
 ### 5，修改文件后需要重复第三步第四步
@@ -140,6 +140,10 @@ git clone
 
 ```properties
 git pull [远程库地址别名] [远程分支名]
+
+# 例子
+
+git pull note master
 ```
 
 当同时修改一个文件时，会产生冲突，会导致上传失败，这时会提示需要先拉取后处理冲突，再去上传
