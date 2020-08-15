@@ -1,6 +1,10 @@
 # VUE
 
-Vue 的核心库只关注视图层，不仅易于上手，还便于与第三方库或既有项目整合
+> 部分笔记代码来源于黑马视频笔记以及官方文档
+
+
+
+`Vue`的核心库只关注视图层，不仅易于上手，还便于与第三方库或既有项目整合
 
 ```
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -2053,3 +2057,107 @@ template:`<slot>三</slot>`
 </div>
 ```
 
+
+
+## 前后端互交
+
+接口调用方式：`ajax`，`fetch`，`axios`
+
+### promise
+
+- 主要解决异步深层嵌套的问题
+- promise 提供了简洁的API  使得异步操作更加容易
+
+实现方式
+
+.then()：得到异步任务正确的结果
+
+.catch()：获取异常信息
+
+.finally()：成功与否都会执行（不是正式标准） 
+
+
+
+Promise的构造函数接收一个参数，是函数，并且传入两个参数：resolve，reject， 分别表示异步操作执行成功后的回调函数和异步操作执行失败后的回调函数
+
+```html
+ <script type="text/javascript">
+        var p = new Promise(function(resolve,reject){
+            setTimeout(function(){
+                var flag = true;
+                if(flag) {
+                    resolve('成功了');
+                }else{
+                    reject('出错了');
+                }
+            },100)
+        });
+        p.then(function(data){
+            console.log(data)
+        },function(data){
+            # 获取异常信息,也可以是catch
+            console.log(data)
+          }) 
+        .finally(function(){
+            console.log('finished')
+          });
+</script>
+```
+
+发送多个AJAX请求
+
+```html
+<script type="text/javascript">
+    /*
+      基于Promise发送Ajax请求
+    */
+    function queryData(url) {
+      var p = new Promise(function(resolve, reject){
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+          if(xhr.readyState != 4) return;
+          if(xhr.readyState == 4 && xhr.status == 200) {
+            resolve(xhr.responseText);
+          }else{
+            reject('服务器错误');
+          }
+        };
+        xhr.open('get', url);
+        xhr.send(null);
+      });
+      return p;
+    }
+	# 注意：这里需要开启一个服务 
+    # 在then方法中，你也可以直接return数据而不是Promise对象，在后面的then中就可以接收到数据了
+    # 这也是针对原生多个AJAX请求太丑Promise采取的方式
+    # 返回的也可以是值，而后面的then方法接受的也就是那个值，但是同样也可以继续连接下去，因为then会默认产生一个当前对象传递下去
+    queryData('http://localhost:3000/data')
+      .then(function(data){
+        console.log(data) 
+        return queryData('http://localhost:3000/data1');
+      })
+      .then(function(data){
+        console.log(data);
+        return queryData('http://localhost:3000/data2');
+      })
+      .then(function(data){
+        console.log(data)
+      });
+  </script>
+```
+
+
+
+静态方法
+
+.all()
+
+- `Promise.all`方法接受一个数组作参数，数组中的对象（p1、p2、p3）均为promise实例（如果不是一个promise，该项会被用`Promise.resolve`转换为一个promise)
+
+.race()
+
+- `Promise.race`方法同样接受一个数组作参数。当p1, p2, p3中有一个实例的状态发生改变（变为`fulfilled`或`rejected`），p的状态就跟着改变。并把第一个改变状态的promise的返回值，传给p的回调函数
+
+
+
+> 两个方法的差异就是all会等到全部执行完再回调，race会在第一个执行完就回调

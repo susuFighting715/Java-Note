@@ -628,9 +628,35 @@ boolean result = name instanceof String;  // 由于 name 是 String 类型，所
 
 
 
+### 十一，递归
+
+递归：指在当前方法内调用自己 
+
+递归的分类: 递归分为两种，直接递归和间接递归
 
 
-### 十一，权限修饰符
+
+ 直接递归称为方法自身调用自己
+
+ 间接递归可以A方法调用B方法，B方法调用C方法，C方法调用A方法
+
+
+
+ **注意事项**： 递归一定要有条件限定，保证递归能够停止下来，否则会发生栈内存溢出
+
+
+
+ 在递归中虽然有限定条件，但是递归次数不能太多。否则也会发生栈内存溢出。
+
+ 构造方法,禁止递归
+
+```
+Exception in thread "main" java.lang.StackOverflowError
+```
+
+
+
+### 十二，权限修饰符
 
 | 修饰符    | 类中 | 同一个包中 | 子类中 | 任何地方 |
 | --------- | ---- | ---------- | ------ | -------- |
@@ -644,6 +670,46 @@ boolean result = name instanceof String;  // 由于 name 是 String 类型，所
 注意：
 
 1，**声明时没有写访问修饰符默认是default**，**default不能修饰变量**
+
+
+
+## @字符编码和字符集
+
+**字符编码**（Character Encoding）: 就是一套自然语言的字符与二进制数之间的对应规则。
+
+计算机中储存的信息都是用二进制数表示的，而我们在屏幕上看到的数字、英文、标点符号、汉字等字符是二进制数转换之后的结果
+
+
+
+按照某种规则，将字符存储到计算机中，称为**编码**
+
+反之，将存储在计算机中的二进制数按照某种规则解析显示出来，称为**解码**。
+
+
+
+**编码表**：生活中文字和计算机中二进制的对应规则
+
+**字符集**：也叫编码表。是一个系统支持的所有字符的集合，包括各国家文字、标点符号、图形符号、数字等。
+
+> 常见字符集有ASCII字符集、GBK字符集、Unicode字符集
+>
+> Windows系统中创建的文本文件时，由于Windows系统的默认是GBK编码，就会出现乱码
+
+
+
+String类的构造方法提供了把字节数组转换成字符的方法
+
+`public String(byte[] bytes)`
+
+`public String(byte[] bytes, String charsetName)`
+
+同时提供了`public byte[] getBytes()`和`public byte[] getBytes(String charsetName)`方法来把字符串转换为字节数组，有参方法用来指定字符集。
+
+```java
+// 编码和解码要统一
+byte[] bytes = "我真的是个好人".getBytes("utf-8");
+String s = new String(bytes, "utf-8"
+```
 
 
 
@@ -1147,6 +1213,24 @@ Java序列化就是指把Java对象转换为字节序列的过程
 
 Java反序列化就是指把字节序列恢复为Java对象的过程
 
+
+
+> 用一个字节序列可以表示一个对象，该字节序列包含该`对象的数据`、`对象的类型`和`对象中存储的属性`等信息
+>
+> 字节序列写出到文件之后，相当于文件中**持久保存**了一个对象的信息
+>
+> 反之，该字节序列还可以从文件中读取回来，重构对象，对它进行反序列化，对象的数据`、`对象的类型`和`对象中存储的数据`信息，都可以用来在内存中创建对象
+
+
+
+一个对象要想序列化，必须满足两个**条件**:
+
+一：该类必须实现`java.io.Serializable ` 接口，`Serializable` 是一个标记接口，不实现此接口的类将不会使任何状态序列化或反序列化，会抛出`NotSerializableException` 。
+
+二：该类的所有属性必须是可序列化的。如果有一个属性不需要可序列化的，则该属性必须注明是瞬态的，使用`transient` 关键字修饰。
+
+
+
 ### 二，作用
 
 序列化
@@ -1173,35 +1257,31 @@ Java反序列化就是指把字节序列恢复为Java对象的过程
 
 Serializable是Java提供的序列化接口，是一个空接口，**为对象提供标准的序列化与反序列化操作**
 
-```
-
-```
-
 
 
 **实现方式**
 
 ①若Student类仅仅实现了**Serializable接口**，则可以按照以下方式进行序列化和反序列化。
 
-> ObjectOutputStream采用默认的序列化方式，对Student对象的非transient的实例变量进行序列化。     
+> `ObjectOutputStream`采用默认的序列化方式，对Student对象的非transient的实例变量进行序列化。     
 >
-> ObjcetInputStream采用默认的反序列化方式，对Student对象的非transient的实例变量进行反序列化。
+> `ObjcetInputStream`采用默认的反序列化方式，对Student对象的非transient的实例变量进行反序列化。
 
  
 
-②若Student类仅仅实现了Serializable接口，并且还定义了readObject(ObjectInputStream in)和writeObject(ObjectOutputSteam out)，则采用以下方式进行序列化与反序列化。
+②若Student类仅仅实现了Serializable接口，并且还定义了`readObject(ObjectInputStream in)`和`writeObject(ObjectOutputSteam out)`，则采用以下方式进行序列化与反序列化。
 
-> ObjectOutputStream调用Student对象的writeObject(ObjectOutputStream out)的方法进行序列化。
+> `ObjectOutputStream`调用Student对象的`writeObject(ObjectOutputStream out)`的方法进行序列化。
 >
-> ObjectInputStream会调用Student对象的readObject(ObjectInputStream in)的方法进行反序列化。
+> `ObjectInputStream`会调用Student对象的`readObject(ObjectInputStream in)`的方法进行反序列化。
 
  
 
-③若Student类实现了Externalnalizable接口，且Student类必须实现readExternal(ObjectInput in)和writeExternal(ObjectOutput out)方法，则按照以下方式进行序列化与反序列化
+③若Student类实现了`Externalnalizable`接口，且Student类必须实现`readExternal(ObjectInput in)`和`writeExternal(ObjectOutput out)`方法，则按照以下方式进行序列化与反序列化
 
-> ObjectOutputStream调用Student对象的writeExternal(ObjectOutput out))的方法进行序列化。 
+> `ObjectOutputStream`调用Student对象的`writeExternal(ObjectOutput out))`的方法进行序列化。 
 >
-> ObjectInputStream会调用Student对象的readExternal(ObjectInput in)的方法进行反序列化。
+> `ObjectInputStream`会调用Student对象的`readExternal(ObjectInput in)`的方法进行反序列化。
 
 ## @内部类
 
@@ -1626,3 +1706,8 @@ if(exprl){
 
 
 
+
+
+## @Swing
+
+> 不做讨论
